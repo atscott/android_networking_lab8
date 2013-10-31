@@ -146,37 +146,6 @@ public class NetworkingActivity extends Activity
     }
   }
 
-  private	String	downloadText(String	URL)	{
-    int	BUFFER_SIZE	=	2000;
-    InputStream	in	=	null;
-    try	{
-      in	=	openHttpConnection(URL);
-    }	catch	(IOException	e)	{
-      Log.d("NetworkingActivity",	e.getLocalizedMessage());
-      return	"";
-    }
-
-    InputStreamReader	isr	=	new InputStreamReader(in);
-    int	charRead;
-    String	str	=	"";
-    char[]	inputBuffer	=	new	char[BUFFER_SIZE];
-    try	{
-      while	((charRead	=	isr.read(inputBuffer))	>	0)	{
-        //	---convert	the	chars	to	a	String---
-        String	readString	=	String
-            .copyValueOf(inputBuffer,	0,	charRead);
-        str	+=	readString;
-        inputBuffer	=	new	char[BUFFER_SIZE];
-      }
-      in.close();
-    }	catch	(IOException	e)	{
-      Log.d("NetworkingActivity",	e.getLocalizedMessage());
-      return	"";
-    }
-    return	str;
-  }
-
-
   private	String	wordDefinition(String	word)	{
     InputStream	in	=	null;
     String	strDefinition	=	"";
