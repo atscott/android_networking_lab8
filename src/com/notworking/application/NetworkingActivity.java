@@ -8,9 +8,17 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -27,6 +35,8 @@ public class NetworkingActivity extends Activity
     setContentView(R.layout.main);
 
     new DownloadImageTask().execute("http://jayurbain.com/images/mel-fetch-mke.jpg");
+    new	DownloadTextTask().execute("apple");
+
   }
 
   private InputStream openHttpConnection(String urlString) throws IOException
@@ -124,5 +134,109 @@ public class NetworkingActivity extends Activity
     }
   }
 
+  private	class	DownloadTextTask	extends	AsyncTask<String,	Void,	String>	{
+    protected	String	doInBackground(String...	urls)	{
+      return	wordDefinition(urls[0]);
+    }
+
+    @Override
+    protected	void	onPostExecute(String	result)	{
+      Toast.makeText(getBaseContext(),	result,
+          Toast.LENGTH_LONG).show();
+    }
+  }
+
+  private	String	downloadText(String	URL)	{
+    int	BUFFER_SIZE	=	2000;
+    InputStream	in	=	null;
+    try	{
+      in	=	openHttpConnection(URL);
+    }	catch	(IOException	e)	{
+      Log.d("NetworkingActivity",	e.getLocalizedMessage());
+      return	"";
+    }
+
+    InputStreamReader	isr	=	new InputStreamReader(in);
+    int	charRead;
+    String	str	=	"";
+    char[]	inputBuffer	=	new	char[BUFFER_SIZE];
+    try	{
+      while	((charRead	=	isr.read(inputBuffer))	>	0)	{
+        //	---convert	the	chars	to	a	String---
+        String	readString	=	String
+            .copyValueOf(inputBuffer,	0,	charRead);
+        str	+=	readString;
+        inputBuffer	=	new	char[BUFFER_SIZE];
+      }
+      in.close();
+    }	catch	(IOException	e)	{
+      Log.d("NetworkingActivity",	e.getLocalizedMessage());
+      return	"";
+    }
+    return	str;
+  }
+
+
+  private	String	wordDefinition(String	word)	{
+    InputStream	in	=	null;
+    String	strDefinition	=	"";
+    try	{
+      in	=	openHttpConnection(
+          "http://services.aonaware.com/DictService/DictService.asmx/Define?word="+	word);
+      Document doc	=	null;
+      DocumentBuilderFactory	dbf	=
+          DocumentBuilderFactory.newInstance();
+      DocumentBuilder db;
+      try	{
+        db	=	dbf.newDocumentBuilder();
+        doc	=	db.parse(in);
+      }	catch	(ParserConfigurationException e)	{
+        e.printStackTrace();
+      }	catch	(Exception	e)	{
+        e.printStackTrace();
+      }
+      doc.getDocumentElement().normalize();
+
+      //	---retrieve	all	the	<Definition>	elements---
+      NodeList	definitionElements	=	doc.getElementsByTagName("Definition");
+
+      //	---iterate	through	each	<Definition>	elements---
+      for	(int	i	=	0;	i	<	definitionElements.getLength();	i++)	{
+        Node	itemNode	=	definitionElements.item(i);
+        if	(itemNode.getNodeType()	==	Node.ELEMENT_NODE)	{
+          //	---convert	the	Definition	node	into	an	Element---
+          Element	definitionElement	=	(Element)	itemNode;
+
+          //	---get	all	the	<WordDefinition>	elements	under
+          //	the	<Definition>	element---
+          NodeList	wordDefinitionElements	=	(definitionElement)
+              .getElementsByTagName("WordDefinition");
+
+          strDefinition	=	"";
+          //	---iterate	through	each	<WordDefinition>	elements---
+          for	(int	j	=	0;	j	<	wordDefinitionElements.getLength();
+                j++)	{
+            //	---convert	<WordDefinition>	node	into	an	Element---
+            Element	wordDefinitionElement	=	(Element)
+                wordDefinitionElements.item(j);
+
+            //	---get	all	the	child	nodes	under	the
+            //	<WordDefinition>	element---
+            NodeList textNodes	=	((Node)
+                wordDefinitionElement)
+                .getChildNodes();
+
+            strDefinition	+=	((Node)	textNodes.item(0))
+                .getNodeValue()	+	".	\n";
+          }
+
+        }
+      }
+    }	catch	(IOException	e1)	{
+      Log.d("NetworkingActivity",	e1.getLocalizedMessage());
+    }
+    //	---return	the	definitions	of	the	word---
+    return	strDefinition;
+  }
 
 }
