@@ -5,6 +5,25 @@
               android:layout_height="fill_parent"
         >
 
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageSearch"
+                android:hint="Enter image search query"/>
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Go"
+                android:id="@+id/goButton"/>
+    </LinearLayout>
+
     <ImageView
             android:id="@+id/img"
             android:layout_width="wrap_content"

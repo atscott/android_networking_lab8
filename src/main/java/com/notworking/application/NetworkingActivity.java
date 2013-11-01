@@ -6,8 +6,12 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,6 +26,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 
 public class NetworkingActivity extends Activity
 {
@@ -33,9 +38,25 @@ public class NetworkingActivity extends Activity
   {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-
     new DownloadImageTask().execute("http://jayurbain.com/images/mel-fetch-mke.jpg");
     new	DownloadTextTask().execute("apple");
+
+    addListenerForGoButton();
+
+  }
+
+  private void addListenerForGoButton()
+  {
+    Button goButton = (Button)findViewById(R.id.goButton);
+    goButton.setOnClickListener(new View.OnClickListener()
+    {
+      @Override
+      public void onClick(View view)
+      {
+        EditText searchText = (EditText)findViewById(R.id.imageSearch);
+        new BingSearchTask().execute(searchText.getText().toString());
+      }
+    });
 
   }
 
@@ -102,6 +123,10 @@ public class NetworkingActivity extends Activity
         {
           //	---increment	the	image	count---
           imagesCount++;
+
+          //	---return	the	image	downloaded---
+          publishProgress(imageDownloaded);
+
           try
           {
             //	---insert	a	delay	of	3	seconds---
@@ -110,8 +135,6 @@ public class NetworkingActivity extends Activity
           {
             e.printStackTrace();
           }
-          //	---return	the	image	downloaded---
-          publishProgress(imageDownloaded);
         }
       }
       //	---return	the	total	images	downloaded	count---
@@ -132,6 +155,21 @@ public class NetworkingActivity extends Activity
           "Total	" + imagesDownloaded + "	images	downloaded",
           Toast.LENGTH_LONG).show();
     }
+  }
+
+  private	class	BingSearchTask	extends	AsyncTask<String,	Void,	String>	{
+
+    @Override
+    protected String doInBackground(String... strings)
+    {
+      JSONObject response = BingSearch.searchForImage(strings[0]);
+      BingImageResultJSONParser parser = new BingImageResultJSONParser();
+      List<String> imageUrls = parser.getURLSForImagesFromJson(response);
+      new DownloadImageTask().execute(imageUrls.toArray(new String[imageUrls.size()]));
+      return null;
+    }
+
+
   }
 
   private	class	DownloadTextTask	extends	AsyncTask<String,	Void,	String>	{
