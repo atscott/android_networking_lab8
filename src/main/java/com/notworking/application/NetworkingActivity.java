@@ -129,8 +129,8 @@ public class NetworkingActivity extends Activity
 
           try
           {
-            //	---insert	a	delay	of	3	seconds---
-            Thread.sleep(3000);
+            //	---insert	a	delay	of	1	seconds---
+            Thread.sleep(1000);
           } catch (InterruptedException e)
           {
             e.printStackTrace();
